@@ -4,7 +4,10 @@ with open('input', 'r') as f:
 def sum_tuples_if_equal(ts):
     return sum(x for x, y in ts if x==y)
 
-print("Part 1", sum_tuples_if_equal(zip(input, input[1:] + [input[-1]])))
+def circulate(input, offset):
+    return zip(input, input[offset:] + input[:offset])
 
-split = len(input)//2
-print("Part 2", sum_tuples_if_equal(zip(input, input[split:] + input[:split])))
+print("Part 1", sum_tuples_if_equal(circulate(input, 1)))
+
+halfway = len(input)//2
+print("Part 2", sum_tuples_if_equal(circulate(input, halfway)))
