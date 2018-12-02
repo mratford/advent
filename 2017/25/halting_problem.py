@@ -1,18 +1,12 @@
-from collections import deque
+from collections import defaultdict
 
 A, B, C, D, E, F = tuple(range(6))
 
 state = A
-tape = deque([0])
+tape = defaultdict(int)
 p = 0
 
 for _ in range (12861455):
-    if p < 0:
-        tape.appendleft(0)
-        p = 0
-    elif p >= len(tape):
-        tape.append(0)
-
     if state == A:
         if tape[p] == 0:
             tape[p] = 1
@@ -74,4 +68,4 @@ for _ in range (12861455):
             state = A
 
 
-print(sum(tape))
+print(sum(tape.values()))
