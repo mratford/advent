@@ -1,9 +1,9 @@
 use std::fs::File;
-use std::io::{self, BufReader, BufRead};
-use std::path::Path;
+use std::io::{BufReader, BufRead};
+use std::cmp::max;
 
 fn fuel_needed(mass: i32) -> i32 {
-    (mass / 3) - 2
+    max((mass / 3) - 2, 0)
 }
 
 #[cfg(test)]
@@ -32,20 +32,24 @@ mod tests {
 }
 
 fn main() {
-    let f = File::open("input.txt");
+    let f = match File::open("../input") {
+        Err(error) => panic!("{:?}", error),
+        Ok(f) => f
+    };
     let f = BufReader::new(f);
-    let mut masses vector: Vec<i32> = vec![];
+
+    let mut masses: Vec<i32> = vec![];
 
     for line in f.lines() {
         match line {
             Err(error) => panic!("{:?}", error),
             Ok(string) => match string.trim().parse::<i32>() {
-                None => panic!("Not a number"),
-                Some(mass) => masses.push(number)
+                Err(error) => panic!("{:?}", error),
+                Ok(mass) => masses.push(mass)
             }
         }
     }
 
-    println!("{}", masses.into_iter().map(fuel_needed))
+    println!("Part 1: {:?}", masses.into_iter().map(fuel_needed).sum::<i32>())
 }
 
