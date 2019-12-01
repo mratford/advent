@@ -2,8 +2,18 @@ use std::fs::File;
 use std::io::{BufReader, BufRead};
 use std::cmp::max;
 
-fn fuel_needed(mass: i32) -> i32 {
+fn fuel_needed(mass: &i32) -> i32 {
     max((mass / 3) - 2, 0)
+}
+
+// Dreadful in many ways, but this is my first program in Rust
+fn actual_fuel_needed(mass: &i32) -> i32 {
+    let f = fuel_needed(mass);
+    if f == 0 {
+        0
+    } else {
+        f + actual_fuel_needed(&f)
+    }
 }
 
 #[cfg(test)]
@@ -50,6 +60,7 @@ fn main() {
         }
     }
 
-    println!("Part 1: {:?}", masses.into_iter().map(fuel_needed).sum::<i32>())
+    println!("Part 1: {:?}", masses.iter().map(fuel_needed).sum::<i32>());
+    println!("Part 2: {:?}", masses.iter().map(actual_fuel_needed).sum::<i32>());
 }
 
