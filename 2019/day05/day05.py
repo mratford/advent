@@ -22,8 +22,7 @@ def get_arguments(program, pointer, n_args, mask):
 
 
 # Horribly inelegant code to run through each possible instruction.
-# I'm putting the input as an iterator and the output as a generator
-# for possible generality.
+# I'm putting  the output as a generator for possible generality.
 def intcode(program, input):
     p = 0
     
