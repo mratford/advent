@@ -40,7 +40,7 @@ class Intcode:
         for i, x in enumerate(program.strip().split(',')):
             self.code[i] = x
         self.p: int = 0
-        self.relative_base
+        self.relative_base: int = 0
 
 
     # Right, having to change this. Keep the state, run until either
