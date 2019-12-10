@@ -23,10 +23,11 @@ def _get_arguments(program: DefaultDict[int, int], pointer: int,
     args = []
     params = [program[p] for p in range(pointer, pointer + n_args)]
     for v, m in zip(params, mask):
+        logging.debug((m, v))
         if m == 0:
-            args.append(v)
-        elif m == 1:
             args.append(program[v])
+        elif m == 1:
+            args.append(v)
         elif m == 2:
             args.append(program[v + relative_base])
             
