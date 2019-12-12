@@ -15,34 +15,22 @@ def _parameter_mask(n: int) -> Iterator[int]:
         yield r
         
         
-# Find the arguments based on the mask        
+# Find the memory location of the arguments based on the mask        
 def _get_arguments(program: DefaultDict[int, int],
                    pointer: int,
                    relative_base: int,
                    n_args: int,
-                   n_outs: int,
                    mask: Iterator[int]) -> List[int]:
     args = []
-    params = [program[p] for p in range(pointer, pointer + n_args)]
-    outputs = [program[p] for p in range(pointer + n_args,
-                                         pointer + n_args + n_outs)]
-
-    for v, m in zip(params, mask):
-        logging.debug((f'Value {v}, mask {m}'))
+    for p, m in zip(range(pointer, pointer + n_args), mask):
+        logging.debug((f'Pointer {p}, mask {m}'))
         if m == 0:
-            args.append(program[v])
+            args.append(program[p])
         elif m == 1:
-            args.append(v)
+            args.append(p)
         elif m == 2:
-            args.append(program[v + relative_base])
+            args.append(program[p] + relative_base)
 
-    for v, m in zip(outputs, mask):
-        logging.debug((f'Value {v}, mask {m}'))
-        if m == 0:
-            args.append(v)
-        elif m == 2:
-            args.append(v + relative_base)
-            
     logging.debug(f'Args: {args}')
     return args
 
@@ -74,18 +62,18 @@ class Intcode:
                 return outputs
             elif opcode == 1:
                 args = _get_arguments(self.code, self.p + 1,
-                                      self.relative_base, 2, 1, param_mask)
-                self.code[args[2]] = args[0] + args[1]
+                                      self.relative_base, 3, param_mask)
+                self.code[args[2]] = self.code[args[0]] + self.code[args[1]]
                 self.p += 4
             elif opcode == 2:
                 args = _get_arguments(self.code, self.p + 1,
-                                      self.relative_base, 2, 1, param_mask)
-                self.code[args[2]] = args[0] * args[1]
+                                      self.relative_base, 3, param_mask)
+                self.code[args[2]] = self.code[args[0]] * self.code[args[1]]
                 self.p += 4
             elif opcode == 3:
                 try:
                     args = _get_arguments(self.code, self.p + 1,
-                                        self.relative_base, 0, 1, param_mask)
+                                          self.relative_base, 1, param_mask)
                     x = next(inputs_iter)
                     logging.debug(f'Input: {x}') 
                     self.code[args[0]] = x
@@ -94,38 +82,40 @@ class Intcode:
                     return outputs
             elif opcode == 4:
                 args = _get_arguments(self.code, self.p + 1,
-                                      self.relative_base, 1, 0, param_mask)
+                                      self.relative_base, 1, param_mask)
                 self.p += 2
-                logging.debug(f'Output: {args[0]}')
-                outputs = outputs.append(args[0])
+                logging.debug(f'Output: {self.code[args[0]]}')
+                outputs = outputs.append(self.code[args[0]])
             elif opcode == 5:
                 args = _get_arguments(self.code, self.p + 1,
-                                      self.relative_base, 2, 0, param_mask)
-                if args[0] != 0:
-                    self.p = args[1]
+                                      self.relative_base, 2, param_mask)
+                if self.code[args[0]] != 0:
+                    self.p = self.code[args[1]]
                 else:
                     self.p += 3
             elif opcode == 6:
                 args = _get_arguments(self.code, self.p + 1,
-                                      self.relative_base, 2, 0, param_mask)
-                if args[0] == 0:
-                    self.p = args[1] 
+                                      self.relative_base, 2, param_mask)
+                if self.code[args[0]] == 0:
+                    self.p = self.code[args[1]]
                 else:
                     self.p += 3
             elif opcode == 7:
                 args = _get_arguments(self.code, self.p + 1,
-                                      self.relative_base, 2, 1, param_mask)
-                self.code[args[2]] = 1 if args[0] < args[1] else 0
+                                      self.relative_base, 3, param_mask)
+                self.code[args[2]] = (
+                    1 if self.code[args[0]] < self.code[args[1]] else 0)
                 self.p += 4
             elif opcode == 8:
                 args = _get_arguments(self.code, self.p + 1,
-                                      self.relative_base, 2, 1, param_mask)
-                self.code[args[2]] = 1 if args[0] == args[1] else 0
+                                      self.relative_base, 3, param_mask)
+                self.code[args[2]] = (
+                    1 if self.code[args[0]] == self.code[args[1]] else 0)
                 self.p += 4
             elif opcode == 9:
                 args = _get_arguments(self.code, self.p + 1,
-                                      self.relative_base, 1, 0, param_mask)
-                self.relative_base += args[0]
+                                      self.relative_base, 1, param_mask)
+                self.relative_base += self.code[args[0]]
                 self.p += 2
 
 
