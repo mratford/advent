@@ -1,5 +1,6 @@
-from typing import Tuple, Iterator, Dict, Set
+from typing import Tuple, Iterator, Dict, Set, List
 import logging
+import math
 
 
 logging.basicConfig(filename='test.log', filemode='w', level=logging.DEBUG)
@@ -56,11 +57,8 @@ def parse(s: str) -> Tuple[Tuple[int, int], Set[Tuple[int, int]]]:
     return ((len(field[0]), len(field)), asteroids)
 
 
-def find_monitoring_station(span: Tuple[int, int], 
-                            asteroids: Set[Tuple[int, int]]) \
+def find_monitoring_station(asteroids: Set[Tuple[int, int]]) \
                                 -> Tuple[Tuple[int, int], int]:
-    max_x, max_y = span
-    
     asteroids_detected: Dict[Tuple[int, int], int] = {}
     
     for asteroid in asteroids:
@@ -75,17 +73,57 @@ def find_monitoring_station(span: Tuple[int, int],
 
 
 def solve_part_1(s: str) -> int:
-    span, asteroids = parse(s)
-    return find_monitoring_station(span, asteroids)[1]
+    _, asteroids = parse(s)
+    return find_monitoring_station(asteroids)[1]
+
+
+
+def angle_from_n(o, a):
+    # Restate coordinates as normal x, y rather than column, row
+    o_x, o_y = o
+    o_y = -o_y
+    a_x, a_y = a
+    a_y = -a_y
+       
+    # Negate as the angle should go "clockwise"
+    angle_from_e = -math.atan2(a_y - o_y, a_x - o_x)
+    if angle_from_e < 0:
+        angle_from_e += 2*math.pi
+    # Add pi/2 to get angle from north
+    result = angle_from_e + math.pi/2
+    # Correct if overshot 2pi
+    return result if result < 2*math.pi else result - 2*math.pi
+
+
+def zapped_asteroids(monitoring_station: Tuple[int, int], 
+                     asteroids: Set[Tuple[int, int]], 
+                     max_y: int) -> List[Tuple[int, int]]:
+    zapped = []
+    asteroids = asteroids - {monitoring_station}
+    
+    while asteroids:
+        can_see = [a for a in asteroids 
+                   if len(set(integer_coords(monitoring_station, a)) 
+                          & asteroids) == 0]
+        
+        for a in sorted(can_see, 
+                        key=lambda x: angle_from_n(monitoring_station, x)):
+            zapped.append(a)
+            
+        asteroids = asteroids - set(can_see)
+            
+    return zapped
     
 
-                   
 def solve_part_2(s: str) -> int:
-    return -1
-    
-    
+    span, asteroids = parse(s)
+    _, max_y = span
+    monitoring_station = find_monitoring_station(asteroids)[0]
+    x, y = zapped_asteroids(monitoring_station, asteroids, max_y)[199]
+    return x * 100 + y
                    
                    
 if __name__ == '__main__':
     s = open('input', 'r').read()
     print(f'Part 1: {solve_part_1(s)}')
+    print(f'Part 2: {solve_part_2(s)}')
