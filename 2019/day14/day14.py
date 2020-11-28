@@ -31,7 +31,6 @@ def parse_data(s: str) -> Dict[str, Reaction]:
     return reactions
 
 
-
 def topological_sort(reactions: Dict[str, Reaction]) -> List[str]:
     graph = defaultdict(set)
     
@@ -46,7 +45,6 @@ def topological_sort(reactions: Dict[str, Reaction]) -> List[str]:
     while search:
         node = search.pop()
         if children := graph[node] - seen:
-            print(children)
             search.append(node)
             c = children.pop()
             search.append(c)
@@ -57,20 +55,19 @@ def topological_sort(reactions: Dict[str, Reaction]) -> List[str]:
     return result
     
     
-def minimum_ore(s: str) -> int:
+def minimum_ore(s, fuel_required=1, req_transform=math.ceil):
     reactions = parse_data(s)
     
     to_produce = defaultdict(int)
-    to_produce['FUEL'] = 1
+    to_produce['FUEL'] = fuel_required
     
     for chem in topological_sort(reactions):
-        print(chem)
         if chem == 'ORE':
             return to_produce['ORE']
         
         required = to_produce[chem]
         produced_per_reaction = reactions[chem].produced
-        reactions_required = math.ceil(required / produced_per_reaction)
+        reactions_required = req_transform(required / produced_per_reaction)
 
         for n_ing_required, ingredient in reactions[chem].ingredients:
             to_produce[ingredient] += reactions_required * n_ing_required
