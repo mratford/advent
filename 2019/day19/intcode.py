@@ -2,6 +2,7 @@ from pyrsistent import pvector, pmap
 from pyrsistent.typing import PVector, PMap
 from collections import defaultdict
 from typing import Iterator, List, ClassVar, DefaultDict
+from copy import deepcopy
 
 
 # Create a mask for immediate values from the integer values
@@ -36,7 +37,8 @@ class Intcode:
             self.code[i] = int(x)
         self.p: int = 0
         self.relative_base: int = 0
-
+        self.original_code = deepcopy(self.code)
+            
 
     # Right, having to change this. Keep the state, run until either
     # expecting an input or finishing, either way returning a list of outputs.
@@ -110,3 +112,9 @@ class Intcode:
         return outputs
         
 
+    def reset(self):
+        self.code = deepcopy(self.original_code)
+        self.p = 0
+        self.relative_base = 0
+
+        return self
