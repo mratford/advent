@@ -1,3 +1,6 @@
+# Brute force solution for running with pypy, a better
+# solution is in the notebook.
+
 import itertools
 
 def parse_data_2(s):
