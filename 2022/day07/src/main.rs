@@ -77,54 +77,59 @@ fn main() {
     let input = fs::read_to_string("test_input").unwrap();
     let code = parse(&input);
 
-    let mut current_dir = String::from("/");
-    let mut directories: HashMap<String, HashMap<String, File>> = HashMap::new();
+    let mut current_dir: Vec<String> = Vec::new();
+    let mut sizes: HashMap<String, u64> = HashMap::new();
+    current_dir.push(String::from("/"));
+    sizes.insert("/".to_string(), 0);
 
     for command in code {
-        if !directories.contains_key(&current_dir) {
-            directories.insert(current_dir.clone(), HashMap::new());
+        let cd_str = current_dir.join("/").to_string();
+        if !sizes.contains_key(&cd_str) {
+            sizes.insert(cd_str, 0);
         }
-
+        println!("{:?}", command);
         match command {
             Command::Cd(dir) => {
-                if dir.starts_with("/") {
-                    current_dir = dir;
+                if dir == "/" {
+                    current_dir = Vec::new();
+                    current_dir.push(String::from("/"));
                 } else if dir == ".." {
-                    current_dir = Path::new(&current_dir)
-                        .parent()
-                        .unwrap()
-                        .to_str()
-                        .unwrap()
-                        .to_string();
+                    current_dir.pop().unwrap();
                 } else {
-                    current_dir = Path::new(&current_dir)
-                        .join(&dir)
-                        .to_str()
-                        .unwrap()
-                        .to_string();
+                    current_dir.push(dir);
                 }
             }
             Command::Ls(items) => {
                 for item in items {
                     match item {
                         LsItem::Directory(dir) => {
-                            if !directories.contains_key(&dir) {
-                                directories.insert(dir.clone(), HashMap::new());
-                            }
+                            // do nothing
                         }
                         LsItem::File(File { name, size }) => {
-                            directories[&current_dir].insert(
-                                name.clone(),
-                                File {
-                                    name: name.clone(),
-                                    size: size,
-                                },
-                            );
+                            println!("{:?} {:?}", current_dir, current_dir.len());
+                            for i in 1..=current_dir.len() {
+                                println!("{:?} {:?}", i, size);
+                                *sizes
+                                    .get_mut(&current_dir[0..i].join("/").to_string())
+                                    .unwrap() += size;
+                                println!(
+                                    "Look {:?} {:?}",
+                                    current_dir[0..i].join("/").to_string(),
+                                    sizes
+                                );
+                            }
                         }
                     }
                 }
             }
             Command::WTF => (),
         }
+
+        println!("Sizes {:?}", sizes);
+        println!("Current dir {:?}", current_dir);
     }
+
+    let xs: Vec<u64> = sizes.values().filter(|x| **x <= 100000).sum();
+    println!("{:?}", xs);
+    //let part_1: u64 = xs.iter().filter(|x| x <= &&&100000).sum() as u64;
 }
