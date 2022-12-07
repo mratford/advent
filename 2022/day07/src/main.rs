@@ -1,12 +1,11 @@
 use itertools::Itertools;
 use std::collections::HashMap;
-use std::path::{Path, PathBuf};
-use std::{clone, fs};
+use std::fs;
 
 #[derive(Debug)]
 struct File {
     name: String,
-    size: u64,
+    size: i64,
 }
 
 // #[derive(Debug)]
@@ -37,7 +36,7 @@ fn parse_ls_item(item: String) -> LsItem {
             let size = split
                 .next()
                 .expect("Failed to parse file size")
-                .parse::<u64>()
+                .parse::<i64>()
                 .expect("Failed to parse file size as integer");
             let name = split.next().expect("Failed to parse file name");
             LsItem::File(File {
@@ -74,11 +73,11 @@ fn parse(code: &String) -> Vec<Command> {
 }
 
 fn main() {
-    let input = fs::read_to_string("test_input").unwrap();
+    let input = fs::read_to_string("input").unwrap();
     let code = parse(&input);
 
     let mut current_dir: Vec<String> = Vec::new();
-    let mut sizes: HashMap<String, u64> = HashMap::new();
+    let mut sizes: HashMap<String, i64> = HashMap::new();
     current_dir.push(String::from("/"));
     sizes.insert("/".to_string(), 0);
 
@@ -87,7 +86,7 @@ fn main() {
         if !sizes.contains_key(&cd_str) {
             sizes.insert(cd_str, 0);
         }
-        println!("{:?}", command);
+
         match command {
             Command::Cd(dir) => {
                 if dir == "/" {
@@ -106,17 +105,10 @@ fn main() {
                             // do nothing
                         }
                         LsItem::File(File { name, size }) => {
-                            println!("{:?} {:?}", current_dir, current_dir.len());
                             for i in 1..=current_dir.len() {
-                                println!("{:?} {:?}", i, size);
                                 *sizes
                                     .get_mut(&current_dir[0..i].join("/").to_string())
                                     .unwrap() += size;
-                                println!(
-                                    "Look {:?} {:?}",
-                                    current_dir[0..i].join("/").to_string(),
-                                    sizes
-                                );
                             }
                         }
                     }
@@ -124,12 +116,23 @@ fn main() {
             }
             Command::WTF => (),
         }
-
-        println!("Sizes {:?}", sizes);
-        println!("Current dir {:?}", current_dir);
     }
 
-    let xs: Vec<u64> = sizes.values().filter(|x| **x <= 100000).sum();
-    println!("{:?}", xs);
-    //let part_1: u64 = xs.iter().filter(|x| x <= &&&100000).sum() as u64;
+    let mut total = 0;
+    for x in sizes.values() {
+        if *x <= 100000 {
+            total += x;
+        }
+    }
+    println!("Part 1: {:?}", total);
+
+    let space_needed = 30000000 - (70000000 - sizes["/"]);
+
+    let mut min = 70000000;
+    for x in sizes.values() {
+        if *x > space_needed && *x < min {
+            min = *x;
+        }
+    }
+    println!("Part 2: {:?}", min);
 }
