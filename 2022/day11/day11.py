@@ -67,6 +67,9 @@ def part_1(monkeys):
 
 
 def part_2(monkeys):
+    # This was making my computer cry so at each stage get the modulus of the
+    # worry level w.r.t. the product of the square of each of the divisors -
+    # need to use the square so the division conditions still hold.
     big_divisor = math.prod(monkey.divisor**2 for monkey in monkeys)
     for _ in range(10000):
         monkey_around_2(monkeys, big_divisor)
