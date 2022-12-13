@@ -12,6 +12,8 @@ def parse_data(s):
 
 
 def right_order(left, right):
+    # As soon as you hit a point where L > R or L < R then order is decided
+    # and return appropriately, otherwise carry on
     match left, right:
         case int(), list():
             return right_order([left], right)
@@ -40,10 +42,6 @@ def right_order(left, right):
 
 
 def part_1(data):
-    # for p1, p2 in data:
-    #     print(p1)
-    #     print(p2)
-    #     print(right_order(p1, p2))
     return sum(
         i if right_order(*p) == InOrder.TRUE else 0 for i, p in zip(count(1), data)
     )
@@ -57,7 +55,7 @@ def part_2(data):
     )
     index_6 = (
         sum(1 if right_order(p, [[6]]) == InOrder.TRUE else 0 for p in flattened_data)
-        + 2
+        + 2  # add 2 as [[2]] is already in there
     )
     return index_2 * index_6
 
