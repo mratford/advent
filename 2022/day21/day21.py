@@ -38,10 +38,6 @@ for n in dag.static_order():
         xs = values[n].split()
         if len(xs) > 1:
             x, op, y = xs
-            print(x)
-            print(op)
-            print(y)
-            print()
             if "humn" not in x:
                 x = str(eval(x))
             if "humn" not in y:
@@ -52,6 +48,7 @@ for n in dag.static_order():
                 values[n] = f"({x} {op} {y})"
 
 eq, root = values["root"][1:-1].split(" = ")
+print(values["root"].replace("values['humn']", "x").replace(".0", ""))
 root = Fraction(root)
 eq = eq.replace("values['humn']", "humn")
 while eq.startswith("("):
@@ -83,7 +80,7 @@ while eq.startswith("("):
         elif op == "+":
             root = root - x
         elif op == "-":
-            root = -root - x
+            root = -root + x
         eq = " ".join(xs[2:])
 
 print(root, "=", eq)
