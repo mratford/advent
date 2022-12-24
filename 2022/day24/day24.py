@@ -129,6 +129,51 @@ def part_1(blizzards, bound):
                 heappush(q, (h + 1, minutes_so_far + 1, this_point))
 
 
+def blizzard_search(bound, start, goal, time, blizzards_after_time):
+    seen = set()
+    # heapq with manhattan distance heuristic and minutes so far
+    q = [(time + manhattan(start, goal), time, start)]
+
+    while True:
+        h, minutes_so_far, this_point = heappop(q)
+        if (this_point, minutes_so_far) not in seen:
+            seen.add((this_point, minutes_so_far))
+            next_blizzards = blizzards_after_time(minutes_so_far + 1)
+
+            for next_point in [
+                this_point + Point(*d) for d in [(1, 0), (-1, 0), (0, 1), (0, -1)]
+            ]:
+                if next_point == goal:
+                    return minutes_so_far + 1
+                elif (
+                    (next_point, minutes_so_far + 1) not in seen
+                    and next_point not in next_blizzards
+                    and 0 <= next_point.x < bound.x
+                    and 0 <= next_point.y < bound.y
+                ):
+                    heappush(
+                        q,
+                        (
+                            minutes_so_far + 1 + manhattan(next_point, goal),
+                            minutes_so_far + 1,
+                            next_point,
+                        ),
+                    )
+            # Wait for blizzards to clear
+            if this_point not in next_blizzards:
+                heappush(q, (h + 1, minutes_so_far + 1, this_point))
+
+
+def part_2(blizzards, bound):
+    blizzards_after_time = blizzards_over_time(blizzards, bound)
+    start = Point(0, bound.y)
+    goal = Point(bound.x - 1, -1)
+    t1 = blizzard_search(bound, start, goal, 0, blizzards_after_time)
+    t2 = blizzard_search(bound, goal, start, t1, blizzards_after_time)
+    return blizzard_search(bound, start, goal, t2, blizzards_after_time)
+
+
 if __name__ == "__main__":
     data = parse_data(open("input").read())
     print("Part 1: ", part_1(*data))
+    print("Part 2: ", part_2(*data))
