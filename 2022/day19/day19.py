@@ -1,5 +1,8 @@
 from functools import cache
 from copy import deepcopy
+from functools import cache
+from heapq import heappop, heappush
+import math
 
 
 RESOURCES = ["ore", "clay", "obsidian"]
@@ -25,36 +28,70 @@ def parse_data(s):
     return blueprints
 
 
-def new_resources():
-    return {
-        "ore": 0,
-        "clay": 0,
-        "obsidian": 0,
-        "bots": {"ore": 1, "clay": 0, "obsidian": 0},
-    }
+class Resources:
+    def __init__(self, time=24):
+        self.time = time
+        self.geodes = 0
+        self.r = {
+            "ore": 0,
+            "clay": 0,
+            "obsidian": 0,
+            "bots": {"ore": 1, "clay": 0, "obsidian": 0},
+        }
+
+    def build_robot(self, blueprint, bot):
+        self.mine_resources()
+        for req in blueprint[bot]:
+            self.r[req] -= blueprint[bot][req]
+        if bot != "geode":
+            self.r["bots"][bot] += 1
+        else:
+            self.geodes += self.time
+        return self
+
+    def mine_resources(self):
+        self.time -= 1
+        for resource in RESOURCES:
+            self.r[resource] += self.r["bots"][resource]
+        return self
+
+    def enough_resources(self, blueprint, bot_to_build):
+        return all(
+            blueprint[bot_to_build][resource] <= self.r[resource]
+            for resource in blueprint[bot_to_build]
+        )
+
+    def __lt__(self, other):
+        return (
+            -self.geodes,
+            -self.r["bots"]["obsidian"],
+            -self.r["bots"]["clay"],
+            -self.r["bots"]["ore"],
+            -self.r["obsidian"],
+            -self.r["clay"],
+            -self.r["ore"],
+            -self.time,
+        ) < (
+            -other.geodes,
+            -other.r["bots"]["obsidian"],
+            -other.r["bots"]["clay"],
+            -other.r["bots"]["ore"],
+            -other.r["obsidian"],
+            -other.r["clay"],
+            -other.r["ore"],
+            -self.time,
+        )
 
 
-def update_resources(blueprint, resources, built_bot):
-    r = deepcopy(resources)
-    for req in blueprint[built_bot]:
-        r.update({req: resources[req] - blueprint[built_bot][req]})
-    return r
+@cache
+def max_geodes_in_time_left(t):
+    return t * (t - 1) // 2
 
 
-def mine_resources(resources):
-    r = deepcopy(resources)
-    for resource in RESOURCES:
-        r[resource] += r["bots"][resource]
-    return r
-
-
-def enough_resources(blueprint, resources, bot_to_build):
-    return all(blueprint[bot_to_build].get(r, 0) <= resources[r] for r in RESOURCES)
-
-
-def opt_geodes(blueprint, resources=new_resources(), time=24):
-    # Try a DFS as caching takes all the memory
-    stack = [(0, resources, time)]
+def opt_geodes(blueprint, time=24):
+    # Try a priority search as caching takes all the memory
+    resources = Resources(time)
+    q = [resources]
     max_geodes = 0
 
     max_needed = {
@@ -62,35 +99,37 @@ def opt_geodes(blueprint, resources=new_resources(), time=24):
         for resource in RESOURCES
     }
 
-    while stack:
-        geodes, resources, time_left = stack.pop()
+    while q:
+        resources = heappop(q)
+        max_geodes = max(resources.geodes, max_geodes)
 
-        if time_left == 0:
-            max_geodes = max(geodes, max_geodes)
-        # If there are enough resources for a geode robot build it
-        elif enough_resources(blueprint, resources, "geode"):
-            r = update_resources(blueprint, resources, "geode")
-            stack.append((time_left - 1 + geodes, mine_resources(r), time_left - 1))
-        else:
-            for bot in RESOURCES:
-                if resources["bots"][bot] < max_needed[bot] and enough_resources(
-                    blueprint, resources, bot
+        # Try to create each robot, prune if run out of time
+        for bot in blueprint:
+            if all(resources.r["bots"][resource] > 0 for resource in blueprint[bot]):
+                r = deepcopy(resources)
+                while not r.enough_resources(blueprint, bot):
+                    r.mine_resources()
+                if bot == "geode" and r.time >= 1:
+                    heappush(q, r.build_robot(blueprint, "geode"))
+                elif (
+                    r.time >= 2
+                    and r.geodes + max_geodes_in_time_left(r.time - 1) > max_geodes
+                    and r.r["bots"][bot] < max_needed[bot]
                 ):
-                    r = update_resources(blueprint, resources, bot)
-                    stack.append((geodes, mine_resources(r), time_left - 1))
-            # Is there enough time to build a bot and get resources from it?
-            if time_left > 1:
-                stack.append((geodes, mine_resources(resources), time_left - 1))
-            else:
-                max_geodes = max(geodes, max_geodes)
+                    heappush(q, r.build_robot(blueprint, bot))
 
     return max_geodes
 
 
 def part_1(blueprints):
-    return sum(i * opt_geodes(blueprints[i]) for i in blueprints)
+    return sum(i * opt_geodes(blueprints[i], time=24) for i in blueprints)
+
+
+def part_2(blueprints):
+    return math.prod(opt_geodes(blueprints[i], time=32) for i in [1, 2, 3])
 
 
 if __name__ == "__main__":
-    data = parse_data(open("test_input").read())
+    data = parse_data(open("input").read())
     print("Part 1:", part_1(data))
+    print("Part 2:", part_2(data))
