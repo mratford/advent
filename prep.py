@@ -10,7 +10,7 @@ nb_template = """{
    "id": "268eeed3-4573-4b1d-9cb6-43d41b160b24",
    "metadata": {},
    "source": [
-    "# Day x",
+    "# Day x \\n",
     "## Part 1"
    ]
   },
