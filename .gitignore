@@ -144,3 +144,6 @@ dmypy.json
 
 .vscode/
 main
+
+# AoC input files shouldn't be shared
+input
