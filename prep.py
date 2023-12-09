@@ -25,9 +25,9 @@ nb_template = """{
  ],
  "metadata": {
   "kernelspec": {
-   "display_name": "Python 3 (ipykernel)",
+   "display_name": "Python 3 (AoC)",
    "language": "python",
-   "name": "python3"
+   "name": "advent"
   },
   "language_info": {
    "codemirror_mode": {
