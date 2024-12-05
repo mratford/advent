@@ -147,3 +147,6 @@ main
 
 # AoC input files shouldn't be shared
 input
+input.txt
+
+.DS_Store
