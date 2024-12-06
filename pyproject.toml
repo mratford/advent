@@ -15,4 +15,5 @@ dependencies = [
     "parsy>=2.1",
     "pyrsistent>=0.20.0",
     "sympy>=1.13.3",
+    "tqdm>=4.67.1",
 ]
