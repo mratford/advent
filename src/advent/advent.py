@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from functools import cache, partial
+import math
 
 @dataclass(eq=True, frozen=True)
 class Point:
@@ -85,3 +86,41 @@ def parse_grid(s):
 
 def read_input():
     return open("input").read()
+
+@dataclass
+class Point3D:
+    x: int
+    y: int
+    z: int
+
+    def __add__(self, other):
+        return self.__class__(self.x + other.x, self.y + other.y, self.z + other.z)
+
+    def __sub__(self, other):
+        return self.__class__(self.x - other.x, self.y - other.y, self.z - other.z)
+
+    def __neg__(self):
+        return self.__class__(-self.x, -self.y, -self.z)
+
+    def __hash__(self):
+        return hash((self.x, self.y, self.z))
+
+    def __iter__(self):
+        yield self.x
+        yield self.y
+        yield self.z
+
+    def __mod__(self, other):
+        if isinstance(other, Point):
+            return self.__class__(self.x % other.x, self.y % other.y, self.z % other.z)
+        else:
+            return self.__class__(self.x % other, self.y % other, self.z % other)
+        
+    def __mul__(self, multiple):
+        return self.__class__(self.x * multiple, self.y * multiple, self.z * multiple)
+
+    def __lt__(self, other):
+        return tuple(self) < tuple(other)
+
+def distance(p1, p2):
+    return math.sqrt(sum((a - b) ** 2 for a, b in zip(p1, p2)))
