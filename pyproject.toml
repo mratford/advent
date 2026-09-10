@@ -23,6 +23,9 @@ dependencies = [
     "tqdm>=4.67.1",
 ]
 
+[tool.ruff]
+line-length=79
+
 [build-system]
 requires = ["uv_build>=0.12.13,<0.13"]
 build-backend = "uv_build"
