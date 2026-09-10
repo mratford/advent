@@ -15,6 +15,7 @@ dependencies = [
     "parsy>=2.1",
     "pillow>=12.0.0",
     "pyrsistent>=0.20.0",
+    "pytest>=9.1.1",
     "pyvis>=0.3.2",
     "sympy>=1.13.3",
     "tqdm>=4.67.1",
