@@ -27,3 +27,10 @@ def parse_equation(input_data: str) -> LinearEquations:
             )
         )
     return LinearEquations(matrix, joltages)
+
+
+def swap_rows(lineqs: LinearEquations, i: int, j: int) -> LinearEquations:
+    return LinearEquations(
+        lineqs.A.set(i, lineqs.A[j]).set(j, lineqs.A[i]),
+        lineqs.b.set(i, lineqs.b[j]).set(j, lineqs.b[i]),
+    )
