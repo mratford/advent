@@ -1,7 +1,13 @@
 from fractions import Fraction
 
 import pytest
-from day10pt2 import LinearEquations, multiply_row, parse_equation, swap_rows
+from day10pt2 import (
+    LinearEquations,
+    add_row,
+    multiply_row,
+    parse_equation,
+    swap_rows,
+)
 from pyrsistent import pvector
 
 
@@ -49,3 +55,10 @@ def test_multiply(leqs1):
         [[1, 2, 3], [8, 10, 12], [7, 8, 9]], [10, 22, 12]
     )
     assert multiply_row(leqs1, 1, 2) == expected
+
+
+def test_add(leqs1):
+    expected = create_linear_equations(
+        [[1, 2, 3], [6, 9, 12], [7, 8, 9]], [10, 31, 12]
+    )
+    assert add_row(leqs1, 0, 1, 2) == expected

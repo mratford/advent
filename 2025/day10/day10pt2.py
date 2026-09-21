@@ -43,3 +43,17 @@ def multiply_row(
         lineqs.A.set(i, pvector(x * scalar for x in lineqs.A[i])),
         lineqs.b.set(i, lineqs.b[i] * scalar),
     )
+
+
+def add_row(
+    lineqs: LinearEquations, fro: int, to: int, scalar: Fraction
+) -> LinearEquations:
+    return LinearEquations(
+        lineqs.A.set(
+            to,
+            pvector(
+                x + y * scalar for x, y in zip(lineqs.A[to], lineqs.A[fro])
+            ),
+        ),
+        lineqs.b.set(to, lineqs.b[to] + lineqs.b[fro] * scalar),
+    )
