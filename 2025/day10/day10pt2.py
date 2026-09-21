@@ -34,3 +34,12 @@ def swap_rows(lineqs: LinearEquations, i: int, j: int) -> LinearEquations:
         lineqs.A.set(i, lineqs.A[j]).set(j, lineqs.A[i]),
         lineqs.b.set(i, lineqs.b[j]).set(j, lineqs.b[i]),
     )
+
+
+def multiply_row(
+    lineqs: LinearEquations, i: int, scalar: Fraction
+) -> LinearEquations:
+    return LinearEquations(
+        lineqs.A.set(i, pvector(x * scalar for x in lineqs.A[i])),
+        lineqs.b.set(i, lineqs.b[i] * scalar),
+    )

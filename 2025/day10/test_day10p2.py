@@ -42,3 +42,9 @@ def test_swapping(leqs1):
         [12, 11, 10],
     )
     assert swap_rows(leqs1, 0, 2) == expected
+
+
+def test_multiply(leqs1):
+    expected = create_linear_equations(
+        [[1, 2, 3], [8, 10, 12], [7, 8, 9]], [10, 22, 12]
+    )
