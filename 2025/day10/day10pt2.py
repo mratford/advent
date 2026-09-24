@@ -57,3 +57,11 @@ def add_row(
         ),
         lineqs.b.set(to, lineqs.b[to] + lineqs.b[fro] * scalar),
     )
+
+
+def zero_pivot_column(lineqs: LinearEquations, pc: int):
+    for i in range(pc + 1, len(lineqs.A)):
+        lineqs = add_row(
+            lineqs, pc, i, -Fraction(lineqs.A[i][pc], lineqs.A[pc][pc])
+        )
+    return lineqs

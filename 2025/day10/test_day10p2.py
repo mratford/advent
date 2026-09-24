@@ -7,6 +7,7 @@ from day10pt2 import (
     multiply_row,
     parse_equation,
     swap_rows,
+    zero_pivot_column,
 )
 from pyrsistent import pvector
 
@@ -62,3 +63,13 @@ def test_add(leqs1):
         [[1, 2, 3], [6, 9, 12], [7, 8, 9]], [10, 31, 12]
     )
     assert add_row(leqs1, 0, 1, 2) == expected
+
+
+def test_zero_pivot_column():
+    leqs = create_linear_equations(
+        [[2, 1, 0], [1, 0, 1], [0, 1, 1]], [4, 3, 1]
+    )
+    expected = create_linear_equations(
+        [[2, 1, 0], [0, Fraction(-1, 2), 1], [0, 1, 1]], [4, 1, 1]
+    )
+    assert zero_pivot_column(leqs, 0) == expected
