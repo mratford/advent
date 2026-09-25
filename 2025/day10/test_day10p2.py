@@ -4,6 +4,7 @@ import pytest
 from day10pt2 import (
     LinearEquations,
     add_row,
+    find_next_pivot,
     multiply_row,
     parse_equation,
     swap_rows,
@@ -73,3 +74,12 @@ def test_zero_pivot_column():
         [[2, 1, 0], [0, Fraction(-1, 2), 1], [0, 1, 1]], [4, 1, 1]
     )
     assert zero_pivot_column(leqs, 0) == expected
+
+
+def test_find_next_pivot():
+    leqs = create_linear_equations(
+        [[1, 0, 1, 0], [0, 0, 0, 1], [0, 0, 3, 7], [0, 0, 54, 74231]],
+        [1, 4545, 457, 6913],
+    )
+    assert find_next_pivot(leqs, 1, 1) is None
+    assert find_next_pivot(leqs, 1, 2) == 2

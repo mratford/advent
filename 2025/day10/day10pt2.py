@@ -65,3 +65,10 @@ def zero_pivot_column(lineqs: LinearEquations, pc: int):
             lineqs, pc, i, -Fraction(lineqs.A[i][pc], lineqs.A[pc][pc])
         )
     return lineqs
+
+
+def find_next_pivot(lineqs: LinearEquations, row: int, col: int) -> int | None:
+    for i in range(row, len(lineqs.A)):
+        if lineqs.A[i][col] != 0:
+            return i
+    return None
