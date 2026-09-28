@@ -72,3 +72,15 @@ def find_next_pivot(lineqs: LinearEquations, row: int, col: int) -> int | None:
         if lineqs.A[i][col] != 0:
             return i
     return None
+
+
+def gaussian_elimination(lineqs: LinearEquations):
+    row = 0
+    for col in range(len(lineqs.A[0])):
+        if (p := find_next_pivot(lineqs, row, col)) is not None:
+            lineqs = swap_rows(lineqs, row, p)
+            lineqs = multiply_row(lineqs, row, Fraction(1, lineqs.A[row, col]))
+            for r in range(row + 1, len(lineqs.A)):
+                lineqs = add_row(row, r, -lineqs.A[r][col])
+            row += 1
+    return lineqs
