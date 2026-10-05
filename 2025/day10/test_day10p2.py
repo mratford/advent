@@ -5,10 +5,12 @@ from day10pt2 import (
     LinearEquations,
     add_row,
     find_next_pivot,
+    gaussian_elimination,
     multiply_row,
     parse_equation,
     swap_rows,
     zero_pivot_column,
+    gaussian_elimination
 )
 from pyrsistent import pvector
 
@@ -83,3 +85,13 @@ def test_find_next_pivot():
     )
     assert find_next_pivot(leqs, 1, 1) is None
     assert find_next_pivot(leqs, 1, 2) == 2
+
+
+def test_gaussian_elimination():
+    leqs = create_linear_equations(
+        [[1, 2, 3], [2, 1, 0], [3, 0, 2]], [14, 4, 9]
+    )
+    expected = create_linear_equations(
+        [[1, 2, 3], [0, 1, 2], [0, 0, 1]], [14, 8, 3]
+    )
+    assert gaussian_elimination(leqs) == expected

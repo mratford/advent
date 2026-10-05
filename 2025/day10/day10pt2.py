@@ -9,6 +9,16 @@ class LinearEquations:
     A: PVector[PVector[Fraction]]
     b: PVector[Fraction]
 
+    def __str__(self):
+        return "\n".join(
+            "| "
+            + str([f"{x.numerator}/{x.denominator}" for x in a])
+            + " | "
+            + str(b)
+            + " | "
+            for a, b in zip(self.A, self.b)
+        )
+
 
 def parse_equation(input_data: str) -> LinearEquations:
     """Create a system of linear equations from a line of joltage
@@ -16,6 +26,9 @@ def parse_equation(input_data: str) -> LinearEquations:
     fields = input_data.strip().split()
     buttons = [pset(eval(field.replace(")", ",)"))) for field in fields[1:-1]]
     joltages = pvector(eval(fields[-1].replace("{", "[").replace("}", "]")))
+    max_presses = pvector(
+        [min(joltages[c] for c in button) for button in buttons]
+    )
     matrix = pvector()
     for i in range(len(joltages)):
         matrix = matrix.append(
@@ -79,8 +92,33 @@ def gaussian_elimination(lineqs: LinearEquations):
     for col in range(len(lineqs.A[0])):
         if (p := find_next_pivot(lineqs, row, col)) is not None:
             lineqs = swap_rows(lineqs, row, p)
-            lineqs = multiply_row(lineqs, row, Fraction(1, lineqs.A[row, col]))
+            lineqs = multiply_row(lineqs, row, Fraction(1, lineqs.A[row][col]))
             for r in range(row + 1, len(lineqs.A)):
-                lineqs = add_row(row, r, -lineqs.A[r][col])
+                lineqs = add_row(lineqs, row, r, -lineqs.A[r][col])
             row += 1
     return lineqs
+
+
+def is_row_echelon(lineqs: LinearEquations) -> bool:
+    for r in range(1, len(lineqs.A)):
+        for c in range(min(r, len(lineqs.A[0]))):
+            if lineqs.A[r][c] != 0:
+                return False
+    return True
+
+
+max_unknowns = 0
+for i, line in enumerate(open("input", "r").readlines()):
+    lineqs = parse_equation(line)
+    print(i)
+    nrows = len(lineqs.A)
+    ncols = len(lineqs.A[0])
+    unknowns = ncols - nrows
+    max_unknowns = max(max_unknowns, unknowns)
+    print(f"{nrows} rows, {ncols} columns, {unknowns} unknowns")
+    print(lineqs)
+    print()
+    print(gaussian_elimination(lineqs))
+    print()
+    print()
+print(f"{max_unknowns = }")
