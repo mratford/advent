@@ -8,9 +8,9 @@ from day10pt2 import (
     gaussian_elimination,
     multiply_row,
     parse_equation,
+    solve_row_echelon,
     swap_rows,
     zero_pivot_column,
-    gaussian_elimination
 )
 from pyrsistent import pvector
 
@@ -95,3 +95,11 @@ def test_gaussian_elimination():
         [[1, 2, 3], [0, 1, 2], [0, 0, 1]], [14, 8, 3]
     )
     assert gaussian_elimination(leqs) == expected
+
+
+def test_solve_row_echelon():
+    leqs = create_linear_equations(
+        [[1, 2, 3], [0, 1, 2], [0, 0, 1]], [14, 8, 3]
+    )
+    expected = pvector([1, 2, 3])
+    assert solve_row_echelon(leqs) == expected

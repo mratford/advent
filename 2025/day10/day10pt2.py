@@ -9,6 +9,14 @@ class LinearEquations:
     A: PVector[PVector[Fraction]]
     b: PVector[Fraction]
 
+    @property
+    def nrows(self):
+        return len(self.A)
+
+    @property
+    def ncols(self):
+        return len(self.A[0])
+
     def __str__(self):
         return "\n".join(
             "| "
@@ -26,9 +34,6 @@ def parse_equation(input_data: str) -> LinearEquations:
     fields = input_data.strip().split()
     buttons = [pset(eval(field.replace(")", ",)"))) for field in fields[1:-1]]
     joltages = pvector(eval(fields[-1].replace("{", "[").replace("}", "]")))
-    max_presses = pvector(
-        [min(joltages[c] for c in button) for button in buttons]
-    )
     matrix = pvector()
     for i in range(len(joltages)):
         matrix = matrix.append(
@@ -73,7 +78,7 @@ def add_row(
 
 
 def zero_pivot_column(lineqs: LinearEquations, pc: int):
-    for i in range(pc + 1, len(lineqs.A)):
+    for i in range(pc + 1, lineqs.nrows):
         lineqs = add_row(
             lineqs, pc, i, -Fraction(lineqs.A[i][pc], lineqs.A[pc][pc])
         )
@@ -81,7 +86,7 @@ def zero_pivot_column(lineqs: LinearEquations, pc: int):
 
 
 def find_next_pivot(lineqs: LinearEquations, row: int, col: int) -> int | None:
-    for i in range(row, len(lineqs.A)):
+    for i in range(row, lineqs.nrows):
         if lineqs.A[i][col] != 0:
             return i
     return None
@@ -93,32 +98,32 @@ def gaussian_elimination(lineqs: LinearEquations):
         if (p := find_next_pivot(lineqs, row, col)) is not None:
             lineqs = swap_rows(lineqs, row, p)
             lineqs = multiply_row(lineqs, row, Fraction(1, lineqs.A[row][col]))
-            for r in range(row + 1, len(lineqs.A)):
+            for r in range(row + 1, lineqs.nrows):
                 lineqs = add_row(lineqs, row, r, -lineqs.A[r][col])
             row += 1
     return lineqs
 
 
 def is_row_echelon(lineqs: LinearEquations) -> bool:
-    for r in range(1, len(lineqs.A)):
-        for c in range(min(r, len(lineqs.A[0]))):
+    for r in range(1, lineqs.nrows):
+        for c in range(min(r, lineqs.ncols)):
             if lineqs.A[r][c] != 0:
                 return False
     return True
 
 
-max_unknowns = 0
-for i, line in enumerate(open("input", "r").readlines()):
-    lineqs = parse_equation(line)
-    print(i)
-    nrows = len(lineqs.A)
-    ncols = len(lineqs.A[0])
-    unknowns = ncols - nrows
-    max_unknowns = max(max_unknowns, unknowns)
-    print(f"{nrows} rows, {ncols} columns, {unknowns} unknowns")
-    print(lineqs)
-    print()
-    print(gaussian_elimination(lineqs))
-    print()
-    print()
-print(f"{max_unknowns = }")
+def solve_row_echelon(lineqs: LinearEquations) -> PVector[Fraction]:
+    solution = pvector([Fraction(0)] * len(lineqs.A[0]))
+    for r in range(lineqs.nrows - 1, -1, -1):
+        solution = solution.set(
+            r,
+            (
+                lineqs.b[r]
+                - sum(
+                    solution[i] * lineqs.A[r][i]
+                    for i in range(r + 1, lineqs.ncols)
+                )
+                / lineqs.A[r][r]
+            ),
+        )
+    return solution
