@@ -127,3 +127,15 @@ def solve_row_echelon(lineqs: LinearEquations) -> PVector[Fraction]:
             ),
         )
     return solution
+
+
+def expand_to_square(lineqs: LinearEquations) -> LinearEquations:
+    return LinearEquations(
+        lineqs.A.extend(
+            [
+                pvector([Fraction(0)] * lineqs.ncols).set(r, Fraction(1))
+                for r in range(lineqs.nrows, lineqs.ncols)
+            ]
+        ),
+        lineqs.b.extend([Fraction(0)] * (lineqs.ncols - lineqs.nrows)),
+    )

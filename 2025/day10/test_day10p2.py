@@ -4,6 +4,7 @@ import pytest
 from day10pt2 import (
     LinearEquations,
     add_row,
+    expand_to_square,
     find_next_pivot,
     gaussian_elimination,
     multiply_row,
@@ -103,3 +104,17 @@ def test_solve_row_echelon():
     )
     expected = pvector([1, 2, 3])
     assert solve_row_echelon(leqs) == expected
+
+
+def test_expand_to_square():
+    leqs = create_linear_equations(
+        [
+            [1, 2, 3, 4],
+            [0, 1, 5, 6],
+        ],
+        [7, 8],
+    )
+    expected = create_linear_equations(
+        [[1, 2, 3, 4], [0, 1, 5, 6], [0, 0, 1, 0], [0, 0, 0, 1]], [7, 8, 0, 0]
+    )
+    assert expand_to_square(leqs) == expected
