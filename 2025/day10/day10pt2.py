@@ -139,3 +139,13 @@ def expand_to_square(lineqs: LinearEquations) -> LinearEquations:
         ),
         lineqs.b.extend([Fraction(0)] * (lineqs.ncols - lineqs.nrows)),
     )
+
+
+def max_possible(lineqs: LinearEquations, button: int) -> int:
+    return int(
+        min(
+            lineqs.b[i]
+            for i in range(lineqs.nrows)
+            if lineqs.A[i][button] == 1
+        )
+    )

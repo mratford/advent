@@ -7,6 +7,7 @@ from day10pt2 import (
     expand_to_square,
     find_next_pivot,
     gaussian_elimination,
+    max_possible,
     multiply_row,
     parse_equation,
     solve_row_echelon,
@@ -118,3 +119,10 @@ def test_expand_to_square():
         [[1, 2, 3, 4], [0, 1, 5, 6], [0, 0, 1, 0], [0, 0, 0, 1]], [7, 8, 0, 0]
     )
     assert expand_to_square(leqs) == expected
+
+
+def test_max_possible():
+    leqs = create_linear_equations(
+        [[1, 1, 1, 1], [1, 0, 0, 1], [1, 1, 0, 0]], [5, 6, 4]
+    )
+    assert max_possible(leqs, 3) == 5
