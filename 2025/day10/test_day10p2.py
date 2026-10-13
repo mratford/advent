@@ -4,12 +4,14 @@ import pytest
 from day10pt2 import (
     LinearEquations,
     add_row,
+    all_possible,
     expand_to_square,
     find_next_pivot,
     gaussian_elimination,
     max_possible,
     multiply_row,
     parse_equation,
+    solve,
     solve_row_echelon,
     swap_rows,
     zero_pivot_column,
@@ -126,3 +128,30 @@ def test_max_possible():
         [[1, 1, 1, 1], [1, 0, 0, 1], [1, 1, 0, 0]], [5, 6, 4]
     )
     assert max_possible(leqs, 3) == 5
+
+
+def test_all_possible():
+    leqs = create_linear_equations(
+        [[1, 1, 1, 1], [1, 0, 0, 1], [1, 1, 0, 0]], [2, 6, 4]
+    )
+    assert list(all_possible(leqs, 3)) == [(3, 0), (3, 1), (3, 2)]
+
+
+def test_solve():
+    assert solve("[.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}") == 10
+
+
+def test_solve_2():
+    assert (
+        solve("[...#.] (0,2,3,4) (2,3) (0,4) (0,1,2) (1,2,3,4) {7,5,12,7,2}")
+        == 12
+    )
+
+
+def test_solve_3():
+    assert (
+        solve(
+            "[.###.#] (0,1,2,3,4) (0,3,4) (0,1,2,4,5) (1,2) {10,11,11,5,10,5}"
+        )
+        == 11
+    )

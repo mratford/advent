@@ -1,5 +1,8 @@
+import itertools
+import math
 from dataclasses import dataclass
 from fractions import Fraction
+from typing import Iterator, Tuple
 
 from pyrsistent import PVector, pset, pvector
 
@@ -142,6 +145,10 @@ def expand_to_square(lineqs: LinearEquations) -> LinearEquations:
 
 
 def max_possible(lineqs: LinearEquations, button: int) -> int:
+    """Calculate the maximum number of times a button can be pushed from a
+    joltages configuration. It's assumed that all the values in lineqs.A are
+    either 1 or 0, as they will be when first initialised.
+    """
     return int(
         min(
             lineqs.b[i]
@@ -149,3 +156,45 @@ def max_possible(lineqs: LinearEquations, button: int) -> int:
             if lineqs.A[i][button] == 1
         )
     )
+
+
+def all_possible(
+    lineqs: LinearEquations, button: int
+) -> Iterator[Tuple[int, int]]:
+    for x in range(max_possible(lineqs, button) + 1):
+        yield (button, x)
+
+
+def all_combinations(
+    lineqs: LinearEquations, buttons: list[int]
+) -> Iterator[LinearEquations]:
+    for xs in itertools.product(
+        *(all_possible(lineqs, button) for button in buttons)
+    ):
+        next_combination = lineqs.b
+        for b, x in xs:
+            next_combination = next_combination.set(b, Fraction(x))
+        yield LinearEquations(lineqs.A, next_combination)
+
+
+def fewest_presses(lineqs: LinearEquations):
+    row_echelon = gaussian_elimination(lineqs)
+    if lineqs.nrows >= lineqs.ncols:
+        solution = solve_row_echelon(row_echelon)
+        return sum(solution)
+    fewest = math.inf
+    buttons = list(range(lineqs.nrows, lineqs.ncols))
+    for le in all_combinations(row_echelon, buttons):
+        print(le)
+        possible_solution = solve_row_echelon(le)
+        if all(x >= 0 for x in possible_solution):
+            fewest = min(fewest, sum(possible_solution))
+    return fewest
+
+
+def solve(s: str):
+    return fewest_presses(parse_equation(s))
+
+
+if __name__ == "__main__":
+    print(solve("[.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}"))
