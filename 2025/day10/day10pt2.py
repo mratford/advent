@@ -57,6 +57,15 @@ def swap_rows(lineqs: LinearEquations, i: int, j: int) -> LinearEquations:
     )
 
 
+def swap_cols(lineqs: LinearEquations, i: int, j: int) -> LinearEquations:
+    A = lineqs.A
+    b = lineqs.b
+    for r in range(lineqs.nrows):
+        A = A.set(r, A[r].set(i, A[r][j]).set(j, A[r][i]))
+        b = b.set(i, b[j]).set(j, b[i])
+    return LinearEquations(A, b)
+
+
 def multiply_row(
     lineqs: LinearEquations, i: int, scalar: Fraction
 ) -> LinearEquations:

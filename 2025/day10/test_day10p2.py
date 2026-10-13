@@ -13,6 +13,7 @@ from day10pt2 import (
     parse_equation,
     solve,
     solve_row_echelon,
+    swap_cols,
     swap_rows,
     zero_pivot_column,
 )
@@ -56,6 +57,13 @@ def test_swapping(leqs1):
         [12, 11, 10],
     )
     assert swap_rows(leqs1, 0, 2) == expected
+
+
+def test_swap_cols(leqs1):
+    expected = create_linear_equations(
+        [[1, 3, 2], [4, 6, 5], [7, 9, 8]], [10, 12, 11]
+    )
+    assert swap_cols(leqs1, 1, 2) == expected
 
 
 def test_multiply(leqs1):
