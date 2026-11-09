@@ -30,7 +30,7 @@ fn parse_args(args: List(String)) -> Result(#(String, Int), Nil) {
 fn prep(year: String, n_days: Int) -> Result(Nil, simplifile.FileError) {
   simplifile.create_directory("src/aoc" <> year)
   |> result.try(fn(_) { simplifile.create_directory("test/aoc" <> year) })
-  |> result.try(fn(_) { simplifile.create_directory("input/aoc" <> year) })
+  |> result.try(fn(_) { simplifile.create_directory("data/aoc" <> year) })
   |> result.try(fn(_) {
     int.range(1, n_days + 1, Ok(Nil), fn(_, day) { prep_day(year, day) })
   })
@@ -50,5 +50,8 @@ fn prep_day(year: String, day: Int) -> Result(Nil, simplifile.FileError) {
       "test/aoc" <> date <> "_test.gleam",
     )
   })
-  |> result.try(fn(_) { simplifile.create_directory("input/aoc" <> date) })
+  |> result.try(fn(_) { simplifile.create_directory("data/aoc" <> date) })
+  |> result.try(fn(_) {
+    simplifile.write("data/aoc" <> date <> "/.placeholder", "")
+  })
 }
