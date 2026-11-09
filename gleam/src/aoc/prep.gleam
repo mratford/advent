@@ -2,6 +2,7 @@ import argv
 import gleam/int
 import gleam/io
 import gleam/result
+import gleam/string
 import simplifile
 
 pub fn main() {
@@ -29,20 +30,25 @@ fn parse_args(args: List(String)) -> Result(#(String, Int), Nil) {
 fn prep(year: String, n_days: Int) -> Result(Nil, simplifile.FileError) {
   simplifile.create_directory("src/aoc" <> year)
   |> result.try(fn(_) { simplifile.create_directory("test/aoc" <> year) })
+  |> result.try(fn(_) { simplifile.create_directory("input/aoc" <> year) })
   |> result.try(fn(_) {
     int.range(1, n_days + 1, Ok(Nil), fn(_, day) { prep_day(year, day) })
   })
 }
 
 fn prep_day(year: String, day: Int) -> Result(Nil, simplifile.FileError) {
-  simplifile.copy_file(
-    "templates/aoc_src.gleam",
-    "src/aoc" <> year <> "/day" <> int.to_string(day) <> ".gleam",
-  )
+  let date = year <> "/day" <> int.to_string(day)
+  simplifile.read("templates/aoc_src.gleam")
+  |> result.map(fn(s) {
+    string.replace(s, "YEAR", year)
+    |> string.replace("DAY", int.to_string(day))
+  })
+  |> result.try(fn(src) { simplifile.write("src/aoc" <> date <> ".gleam", src) })
   |> result.try(fn(_) {
     simplifile.copy_file(
       "templates/aoc_test.gleam",
-      "test/aoc" <> year <> "/day" <> int.to_string(day) <> "_test.gleam",
+      "test/aoc" <> date <> "_test.gleam",
     )
   })
+  |> result.try(fn(_) { simplifile.create_directory("input/aoc" <> date) })
 }

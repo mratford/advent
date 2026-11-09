@@ -1,5 +1,6 @@
 import aoc/input
 import argv
+import gleam/io
 
 pub fn main() -> Nil {
   case argv.load().arguments {
@@ -17,10 +18,10 @@ fn part_2() -> String {
   solve_2(input.load(2015, 1))
 }
 
-fn solve_1(input: String) -> String {
-  todo
+fn solve_1(_input: String) -> String {
+  "answer"
 }
 
-fn solve_2(input: String) -> String {
-  todo
+fn solve_2(_input: String) -> String {
+  "answer"
 }
