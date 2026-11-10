@@ -36,22 +36,22 @@ fn prep(year: String, n_days: Int) -> Result(Nil, simplifile.FileError) {
   })
 }
 
+fn instantiate_template(s: String, year: String, day: Int) -> String {
+  string.replace(s, "YEAR", year)
+  |> string.replace("DAY", int.to_string(day))
+}
+
 fn prep_day(year: String, day: Int) -> Result(Nil, simplifile.FileError) {
   let date = year <> "/day" <> int.to_string(day)
-  simplifile.read("templates/aoc_src.gleam")
-  |> result.map(fn(s) {
-    string.replace(s, "YEAR", year)
-    |> string.replace("DAY", int.to_string(day))
-  })
-  |> result.try(fn(src) { simplifile.write("src/aoc" <> date <> ".gleam", src) })
-  |> result.try(fn(_) {
-    simplifile.copy_file(
-      "templates/aoc_test.gleam",
-      "test/aoc" <> date <> "_test.gleam",
-    )
-  })
-  |> result.try(fn(_) { simplifile.create_directory("data/aoc" <> date) })
-  |> result.try(fn(_) {
-    simplifile.write("data/aoc" <> date <> "/.placeholder", "")
-  })
+  use src_template <- result.try(simplifile.read("templates/aoc_src.gleam"))
+  let src = instantiate_template(src_template, year, day)
+  use _ <- result.try(simplifile.write("src/aoc" <> date <> ".gleam", src))
+  use test_template <- result.try(simplifile.read("templates/aoc_test.gleam"))
+  let dtest = instantiate_template(test_template, year, day)
+  use _ <- result.try(simplifile.write(
+    "test/aoc" <> date <> "_test.gleam",
+    dtest,
+  ))
+  use _ <- result.try(simplifile.create_directory("data/aoc" <> date))
+  simplifile.write("data/aoc" <> date <> "/.placeholder", "")
 }
