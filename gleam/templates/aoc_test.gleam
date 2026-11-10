@@ -1,7 +1,9 @@
-pub fn test_part_1() {
+import aocYEAR/dayDAY
+
+pub fn part_1_test() {
   True
 }
 
-pub fn test_part_2() {
+pub fn part_2_test() {
   True
 }

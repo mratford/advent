@@ -1,7 +1,9 @@
-pub fn test_part_1() {
-  True
+import aoc2015/day1
+
+pub fn part_1_test() {
+  assert day1.solve_1(")())())") == "-3"
 }
 
-pub fn test_part_2() {
-  True
+pub fn part_2_test() {
+  assert day1.solve_2("()())") == "5"
 }
