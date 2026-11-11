@@ -2,6 +2,7 @@ import aoc/input
 import argv
 import gleam/int
 import gleam/io
+import gleam/list
 import gleam/string
 
 pub fn main() -> Nil {
@@ -21,34 +22,30 @@ fn part_2() -> String {
 }
 
 pub fn solve_1(input: String) -> String {
-  lift(input, 0) |> int.to_string
+  input
+  |> moves
+  |> list.fold(0, int.add)
+  |> int.to_string
 }
 
-fn lift(instructions: String, floor: Int) -> Int {
-  case instructions {
-    "" -> floor
-    "(" <> rest -> lift(rest, floor + 1)
-    ")" <> rest -> lift(rest, floor - 1)
-    _ ->
-      lift(
-        string.slice(instructions, 1, string.length(instructions) - 1),
-        floor,
-      )
-  }
+fn moves(instructions: String) -> List(Int) {
+  instructions
+  |> string.to_graphemes
+  |> list.filter_map(fn(x) {
+    case x {
+      "(" -> Ok(1)
+      ")" -> Ok(-1)
+      _ -> Error(Nil)
+    }
+  })
 }
 
 pub fn solve_2(input: String) -> String {
-  find_basement(input, 0, 0) |> int.to_string()
-}
-
-fn find_basement(instructions: String, floor: Int, position: Int) -> Int {
-  case floor {
-    -1 -> position
-    _ ->
-      case instructions {
-        "(" <> rest -> find_basement(rest, floor + 1, position + 1)
-        ")" <> rest -> find_basement(rest, floor - 1, position + 1)
-        _ -> -1
-      }
-  }
+  input
+  |> moves
+  |> list.scan(0, int.add)
+  |> list.take_while(fn(x) { x != -1 })
+  |> list.length
+  |> int.add(1)
+  |> int.to_string
 }
