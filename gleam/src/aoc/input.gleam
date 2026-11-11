@@ -4,7 +4,7 @@ import simplifile
 pub fn load(year: Int, day: Int) -> String {
   case
     simplifile.read(
-      "input/aoc"
+      "data/aoc"
       <> int.to_string(year)
       <> "/day"
       <> int.to_string(day)
@@ -12,6 +12,6 @@ pub fn load(year: Int, day: Int) -> String {
     )
   {
     Ok(data) -> data
-    Error(e) -> "Error: " <> simplifile.describe_error(e)
+    Error(e) -> panic as {"Error: " <> simplifile.describe_error(e)}
   }
 }

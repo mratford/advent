@@ -18,10 +18,10 @@ fn part_2() -> String {
   solve_2(input.load(2026, 6))
 }
 
-fn solve_1(_input: String) -> String {
+pub fn solve_1(_input: String) -> String {
   "answer"
 }
 
-fn solve_2(_input: String) -> String {
+pub fn solve_2(_input: String) -> String {
   "answer"
 }
