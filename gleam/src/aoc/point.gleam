@@ -1,3 +1,7 @@
+import gleam/int
+import gleam/list
+import gleam/string
+
 pub const n = Point(0, 1)
 
 pub const e = Point(1, 0)
@@ -14,3 +18,14 @@ pub fn add(p1: Point, p2: Point) -> Point {
   Point(p1.x + p2.x, p1.y + p2.y)
 }
 
+pub fn from_string(s: String) -> Result(Point, String) {
+  s
+  |> string.split(",")
+  |> list.try_map(int.parse)
+  |> fn(ints) {
+    case ints {
+      Ok([x, y]) -> Ok(Point(x, y))
+      _ -> Error("Could not convert " <> s <> " to a Point")
+    }
+  }
+}
