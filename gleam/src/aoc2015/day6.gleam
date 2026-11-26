@@ -67,3 +67,14 @@ pub fn new_grid() -> Dict(Point, Light) {
   point_range(Point(0, 0), Point(999, 999))
   |> list.fold(dict.new(), fn(d, p) { dict.insert(d, p, Off) })
 }
+
+pub fn parse_data(input: String) -> Result(List(#(fn(Point) -> Point, Dict(Point, Light))), String) {
+  input
+  |> parse.splitlines()
+  |> result.try_map(parse_line)
+}
+
+pub fn parse_line(line: String) -> Result(#(fn(Point) -> Point, Dict(Point, Light)), String) {
+  let fields = string.split(line, " ")
+  case fields {
+    ["turn", "on", p1, _, p2] -> 
