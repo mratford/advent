@@ -1,13 +1,11 @@
 import aoc/input
 import aoc/parse
 import aoc/point.{type Point, Point}
-import aoc/tools
 import argv
 import gleam/dict.{type Dict}
 import gleam/int
 import gleam/io
 import gleam/list
-import gleam/result
 import gleam/string
 
 pub fn main() -> Nil {
@@ -27,24 +25,19 @@ fn part_2() -> String {
 }
 
 pub fn solve_1(input: String) -> String {
-  input
-  |> parse_data
-  |> result.try(
-    list.try_fold(new_grid(), fn(acc, x) {
-      let #(switch, range) = x
-      apply_over_range(acc, switch, range)
-    }),
-  )
-  |> fn(x) {
-    case x {
-      Ok(g) -> dict.values |> list.count(fn(l) { l == On }) |> int.to_string
-      Error(e) -> "Failed: " <> e
-    }
-  }
+  let assert Ok(data) = parse_data(input)
+  apply_over_ranges(new_grid(), data, light_action)
+  |> dict.values
+  |> list.count(fn(l) { l == On })
+  |> int.to_string
 }
 
-pub fn solve_2(_input: String) -> String {
-  "answer"
+pub fn solve_2(input: String) -> String {
+  let assert Ok(data) = parse_data(input)
+  apply_over_ranges(new_grid_2(), data, int_action)
+  |> dict.values
+  |> int.sum
+  |> int.to_string
 }
 
 pub type Light {
@@ -62,12 +55,24 @@ pub type Range {
   Range(from: Point, to: Point)
 }
 
-pub fn light_action(light: Light, switch: Switch) -> Light {
-  case light, switch {
-    _, TurnOn -> On
-    _, TurnOff -> Off
-    On, Toggle -> Off
-    Off, Toggle -> On
+pub fn light_action(switch: Switch) -> fn(Light) -> Light {
+  case switch {
+    TurnOn -> fn(_) { On }
+    TurnOff -> fn(_) { Off }
+    Toggle -> fn(light) {
+      case light {
+        On -> Off
+        Off -> On
+      }
+    }
+  }
+}
+
+pub fn int_action(switch: Switch) -> fn(Int) -> Int {
+  case switch {
+    TurnOn -> fn(x) { x + 1 }
+    TurnOff -> fn(x) { int.max(0, x - 1) }
+    Toggle -> fn(x) { x + 2 }
   }
 }
 
@@ -76,11 +81,35 @@ pub fn point_range(range: Range) -> List(Point) {
   let max_x = int.max(range.from.x, range.to.x)
   let min_y = int.min(range.from.y, range.to.y)
   let max_y = int.max(range.from.y, range.to.y)
-  tools.product(
-    int.range(min_x, max_x + 1, [], list.prepend),
-    int.range(min_y, max_y + 1, [], list.prepend),
-  )
-  |> list.map(fn(t) { Point(t.0, t.1) })
+  int.range(min_x, max_x + 1, [], fn(acc, x) {
+    list.prepend(
+      acc,
+      int.range(min_y, max_y + 1, [], fn(acc_inner, y) {
+        list.prepend(acc_inner, Point(x, y))
+      }),
+    )
+  })
+  |> list.flatten
+}
+
+pub fn apply_over_range(
+  grid: Dict(Point, a),
+  f: fn(a) -> a,
+  range: Range,
+) -> Dict(Point, a) {
+  let min_x = int.min(range.from.x, range.to.x)
+  let max_x = int.max(range.from.x, range.to.x)
+  let min_y = int.min(range.from.y, range.to.y)
+  let max_y = int.max(range.from.y, range.to.y)
+  int.range(min_x, max_x + 1, [], fn(acc, x) {
+    int.range(min_y, max_y + 1, acc, fn(acc_inner, y) {
+      let p = Point(x, y)
+      let assert Ok(v) = dict.get(grid, p)
+      list.prepend(acc_inner, #(p, f(v)))
+    })
+  })
+  |> dict.from_list
+  |> fn(x) { dict.merge(grid, x) }
 }
 
 pub fn new_grid() -> Dict(Point, Light) {
@@ -88,18 +117,19 @@ pub fn new_grid() -> Dict(Point, Light) {
   |> list.fold(dict.new(), fn(d, p) { dict.insert(d, p, Off) })
 }
 
-pub fn apply_over_range(
-  grid: Dict(Point, Light),
-  switch: Switch,
-  range: Range,
-) -> Result(Dict(Point, Light), String) {
-  range
-  |> point_range
-  |> list.try_fold(grid, fn(g, p) {
-    case dict.get(g, p) {
-      Ok(light) -> Ok(dict.insert(g, p, light_action(light, switch)))
-      Error(_) -> Error(point.to_string(p) <> " not in grid")
-    }
+pub fn new_grid_2() -> Dict(Point, Int) {
+  point_range(Range(Point(0, 0), Point(999, 999)))
+  |> list.fold(dict.new(), fn(d, p) { dict.insert(d, p, 0) })
+}
+
+pub fn apply_over_ranges(
+  grid: Dict(Point, a),
+  ranges: List(#(Switch, Range)),
+  f: fn(Switch) -> fn(a) -> a,
+) -> Dict(Point, a) {
+  list.fold(ranges, grid, fn(g, rs) {
+    let #(switch, r) = rs
+    apply_over_range(g, f(switch), r)
   })
 }
 
