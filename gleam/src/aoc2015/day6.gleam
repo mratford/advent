@@ -40,26 +40,30 @@ pub type Light {
   Off
 }
 
-pub fn turn_on(_: Light) -> Light {
-  On
+pub type Switch {
+  TurnOn
+  TurnOff
+  Toggle
 }
 
-pub fn turn_off(_: Light) -> Light {
-  Off
+pub type Range {
+  Range(from: Point, to: Point)
 }
 
-pub fn toggle(light: Light) -> Light {
-  case light {
-    On -> Off
-    Off -> On
+pub fn light_action(light: Light, switch: Switch) -> Light {
+  case light, switch {
+    _, TurnOn -> On
+    _, TurnOff -> Off
+    On, Toggle -> Off
+    Off, Toggle -> On
   }
 }
 
-pub fn point_range(from: Point, to: Point) -> List(Point) {
-  let min_x = int.min(from.x, to.x)
-  let max_x = int.max(from.x, to.x)
-  let min_y = int.min(from.y, to.y)
-  let max_y = int.max(from.y, to.y)
+pub fn point_range(range: Range) -> List(Point) {
+  let min_x = int.min(range.from.x, range.to.x)
+  let max_x = int.max(range.from.x, range.to.x)
+  let min_y = int.min(range.from.y, range.to.y)
+  let max_y = int.max(range.from.y, range.to.y)
   tools.product(
     int.range(min_x, max_x + 1, [], list.prepend),
     int.range(min_y, max_y + 1, [], list.prepend),
@@ -68,45 +72,46 @@ pub fn point_range(from: Point, to: Point) -> List(Point) {
 }
 
 pub fn new_grid() -> Dict(Point, Light) {
-  point_range(Point(0, 0), Point(999, 999))
+  point_range(Range(Point(0, 0), Point(999, 999)))
   |> list.fold(dict.new(), fn(d, p) { dict.insert(d, p, Off) })
 }
 
 pub fn apply_over_range(
   grid: Dict(Point, Light),
-  f: fn(Light) -> Light,
+  switch: Switch,
   range: List(Point),
-) -> Dict(Point, Light) {
-  list.fold(range, grid, fn(acc, x) { dict.insert(f(dict.get
+) -> Result(Dict(Point, Light), String) {
+  list.try_fold(range, grid, fn(g, p) {
+    case dict.get(g, p) {
+      Ok(light) -> Ok(dict.insert(g, p, light_action(light, switch)))
+      Error(_) -> Error(point.to_string(p) <> " not in grid")
+    }
+  })
 }
 
-pub fn parse_data(
-  input: String,
-) -> Result(List(#(fn(Light) -> Light, List(Point))), String) {
+pub fn parse_data(input: String) -> Result(List(#(Switch, Range)), String) {
   input
   |> parse.splitlines()
   |> list.try_map(parse_line)
 }
 
-pub fn parse_line(
-  line: String,
-) -> Result(#(fn(Light) -> Light, List(Point)), String) {
+pub fn parse_line(line: String) -> Result(#(Switch, Range), String) {
   let fields = string.split(line, " ")
   case fields {
-    ["turn", "on", p1, _, p2] -> parse_fields(turn_on, p1, p2)
-    ["turn", "off", p1, _, p2] -> parse_fields(turn_off, p1, p2)
-    ["toggle", p1, _, p2] -> parse_fields(toggle, p1, p2)
+    ["turn", "on", p1, _, p2] -> parse_fields(TurnOn, p1, p2)
+    ["turn", "off", p1, _, p2] -> parse_fields(TurnOff, p1, p2)
+    ["toggle", p1, _, p2] -> parse_fields(Toggle, p1, p2)
     _ -> Error("Failed to parse " <> line)
   }
 }
 
 pub fn parse_fields(
-  f: fn(Light) -> Light,
+  switch: Switch,
   p1: String,
   p2: String,
-) -> Result(#(fn(Light) -> Light, List(Point)), String) {
+) -> Result(#(Switch, Range), String) {
   case point.from_string(p1), point.from_string(p2) {
-    Ok(x), Ok(y) -> Ok(#(f, point_range(x, y)))
+    Ok(x), Ok(y) -> Ok(#(switch, Range(x, y)))
     _, _ -> Error("Failed to parse points " <> p1 <> " " <> p2)
   }
 }

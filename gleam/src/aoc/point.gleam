@@ -29,3 +29,7 @@ pub fn from_string(s: String) -> Result(Point, String) {
     }
   }
 }
+
+pub fn to_string(p: Point) -> String {
+  int.to_string(p.x) <> "," <> int.to_string(p.y)
+}
