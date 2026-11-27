@@ -29,6 +29,18 @@ fn part_2() -> String {
 pub fn solve_1(input: String) -> String {
   input
   |> parse_data
+  |> result.try(
+    list.try_fold(new_grid(), fn(acc, x) {
+      let #(switch, range) = x
+      apply_over_range(acc, switch, range)
+    }),
+  )
+  |> fn(x) {
+    case x {
+      Ok(g) -> dict.values |> list.count(fn(l) { l == On }) |> int.to_string
+      Error(e) -> "Failed: " <> e
+    }
+  }
 }
 
 pub fn solve_2(_input: String) -> String {
@@ -79,9 +91,11 @@ pub fn new_grid() -> Dict(Point, Light) {
 pub fn apply_over_range(
   grid: Dict(Point, Light),
   switch: Switch,
-  range: List(Point),
+  range: Range,
 ) -> Result(Dict(Point, Light), String) {
-  list.try_fold(range, grid, fn(g, p) {
+  range
+  |> point_range
+  |> list.try_fold(grid, fn(g, p) {
     case dict.get(g, p) {
       Ok(light) -> Ok(dict.insert(g, p, light_action(light, switch)))
       Error(_) -> Error(point.to_string(p) <> " not in grid")
